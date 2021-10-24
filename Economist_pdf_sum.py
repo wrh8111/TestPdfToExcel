@@ -1,3 +1,5 @@
+import sys
+
 import camelot.io as camelot
 import pandas as pd
 import openpyxl
@@ -73,6 +75,35 @@ class Economist_pdf_sum:
             NFC_count.append(sum)
         return NFC_count[1:]
 
+# 生成统计报表Excel文件
+def get_report(director):
+    dir_str = director
+    files = os.listdir(dir_str)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.cell(1, 1).value = '考场文件名称'
+    for col in range(1, 9):
+        ws.cell(1, col + 1).value = '第' + str(col) + '场'
+    ws.cell(1, 10).value = '考场总人数'
+    li_row = []#用于装所有统计数据
+    for file in files:
+        # print(dir_str+file)
+        if '.pdf' in file:
+            aa = Economist_pdf_sum(dir_str + file)
+            # print(file[:-4],aa.get_psum_from_NFS(),aa.get_psum_from_file())
+            li_row.append([file[:-4], aa.get_psum_from_NFS(), aa.get_psum_from_file()])
+            aa.close()
+    i = 2 #作为数据行的指针
+    cc = 2#作为场次列的指针
+    for row in li_row:
+        ws.cell(i, 1).value = row[0]
+        for c in row[1]:
+            ws.cell(i, cc).value = c
+            cc += 1
+        cc = 2
+        ws.cell(i, 10).value = row[2]
+        i += 1
+    wb.save('Report.xlsx')
 
 if __name__ == '__main__':
     # aa = Economist_pdf_sum('202110_001_1350201001.pdf')
@@ -84,11 +115,8 @@ if __name__ == '__main__':
     # print(aa.get_psum_from_NFS(),aa.get_psum_from_file())
     # aa.close()
     # dir_str = 'D:\\Work\\2021年数据\\经济\\经济机考\\2021年各地市经济机考考场数据\\厦门\\[1350201]厦门技师学院_20211017124910\\全部座次表\\'
-    dir_str = os.getcwd()+'\\'
-    files = os.listdir(dir_str)
-    for file in files:
-        # print(dir_str+file)
-        if '.pdf' in file:
-            aa = Economist_pdf_sum(dir_str+file)
-            print(file[:-4],aa.get_psum_from_NFS(),aa.get_psum_from_file())
-            aa.close()
+    # dir_str = os.getcwd()+'\\'
+    if sys.argv[1] == None:
+        get_report(os.getcwd()+'\\')
+    else:
+        get_report(sys.argv[1] + '\\')
