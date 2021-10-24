@@ -83,8 +83,8 @@ if __name__ == '__main__':
     # # print(aa.get_psum_from_file())
     # print(aa.get_psum_from_NFS(),aa.get_psum_from_file())
     # aa.close()
-    dir_str = 'D:\\Work\\2021年数据\\经济\\经济机考\\2021年各地市经济机考考场数据\\厦门\\[1350201]厦门技师学院_20211017124910\\全部座次表\\'
-    # dir_str = os.getcwd()+'\\'
+    # dir_str = 'D:\\Work\\2021年数据\\经济\\经济机考\\2021年各地市经济机考考场数据\\厦门\\[1350201]厦门技师学院_20211017124910\\全部座次表\\'
+    dir_str = os.getcwd()+'\\'
     files = os.listdir(dir_str)
     for file in files:
         # print(dir_str+file)
