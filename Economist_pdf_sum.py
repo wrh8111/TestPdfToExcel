@@ -5,7 +5,8 @@ import pandas as pd
 import openpyxl
 import re
 import os
-
+from time import sleep
+from tqdm import tqdm
 
 class Economist_pdf_sum:
 
@@ -58,6 +59,7 @@ class Economist_pdf_sum:
         if os.path.exists(self.__temp_file):
             wb = openpyxl.load_workbook(self.__temp_file)
             ws = wb.active
+            # with tqdm(total=ws.max_row) as pbar:
             for row in range(1, ws.max_row + 1):
                 for col in range(1, ws.max_column + 1):
                     this_cell = str(ws.cell(row, col).value).strip()
@@ -71,7 +73,6 @@ class Economist_pdf_sum:
 
                     if re.match('姓名', this_cell) != None:
                         sum += 1
-            wb.close()
             NFC_count.append(sum)
         return NFC_count[1:]
 
@@ -86,6 +87,13 @@ def get_report(director):
         ws.cell(1, col + 1).value = '第' + str(col) + '场'
     ws.cell(1, 10).value = '考场总人数'
     li_row = []#用于装所有统计数据
+
+    file_count = 0
+    for file in files:
+        if '.pdf' in file:
+            file_count += 1
+
+    libar = tqdm(total=file_count, desc='生成列表：', leave=True)
     for file in files:
         # print(dir_str+file)
         if '.pdf' in file:
@@ -93,9 +101,15 @@ def get_report(director):
             # print(file[:-4],aa.get_psum_from_NFS(),aa.get_psum_from_file())
             li_row.append([file[:-4], aa.get_psum_from_NFS(), aa.get_psum_from_file()])
             aa.close()
+            libar.update(1)
     i = 2 #作为数据行的指针
     cc = 2#作为场次列的指针
+    libar.close()
+
+    pbar = tqdm(total=len(li_row), desc='生成汇总表：', leave=True)
+
     for row in li_row:
+        sleep(0.2)
         ws.cell(i, 1).value = row[0]
         for c in row[1]:
             ws.cell(i, cc).value = c
@@ -103,7 +117,12 @@ def get_report(director):
         cc = 2
         ws.cell(i, 10).value = row[2]
         i += 1
-    wb.save('Report.xlsx')
+        pbar.update(1)
+    pbar.close()
+    wb.save(director+'Report.xlsx')
+
+    for ii in li_row:
+        print(ii)
 
 if __name__ == '__main__':
     # aa = Economist_pdf_sum('202110_001_1350201001.pdf')
@@ -116,7 +135,7 @@ if __name__ == '__main__':
     # aa.close()
     # dir_str = 'D:\\Work\\2021年数据\\经济\\经济机考\\2021年各地市经济机考考场数据\\厦门\\[1350201]厦门技师学院_20211017124910\\全部座次表\\'
     # dir_str = os.getcwd()+'\\'
-    if sys.argv[1] == None:
+    if len(sys.argv) == 1:
         get_report(os.getcwd()+'\\')
     else:
         get_report(sys.argv[1] + '\\')
